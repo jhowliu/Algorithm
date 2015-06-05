@@ -70,32 +70,41 @@ int *swapping(int *data, int *boundary, int *idx, int num)
 {
     int i, j, k;
     int len;
-    int tmp[num+1];
+    int *tmp = malloc((num+1)*sizeof(int));
     int *result = malloc(size*sizeof(int));
     
     k=0;
     len=boundary[0];
-
+    printf("NUM=%d\n", num);
     copyArray(tmp, boundary, num+1); 
     copyArray(result, data, size);
+    printf("Before Boundary\n");
+    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
     /* Upperside */
     for (i=0, j=num/2 ; i<num/2; i++, j++) {
+        printf("\nLen\n");
         copyArray(result+len, data+boundary[i], idx[i]-boundary[i]+1);
         len += (idx[i]-boundary[i]+1);
         copyArray(result+len, data+boundary[j], idx[j]-boundary[j]+1);
         len += (idx[j]-boundary[j]+1);
         tmp[i+1]=len;
+        printf("%d\n", len);
     }
 
+    printf("\n");
+    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
     for (i=0, j=num/2 ; i<num/2; i++, j++) {
         copyArray(result+len, data+idx[i]+1, boundary[i+1]-(idx[i]+1));
         len += (boundary[i+1]-(idx[i]+1));
         copyArray(result+len, data+idx[j]+1, boundary[j+1]-(idx[j]+1));
         len += (boundary[j+1]-(idx[j]+1));
         tmp[j+1]=len;
+        printf("%d\n", len);
     }
 
     copyArray(boundary, tmp, num+1);
+    printf("\n");
+    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
     free(data);
 
     return result;
@@ -135,7 +144,9 @@ int *partition(int *data, int num)
         int round = num/j;
         int k;
 
-        for (k=0; k<round; k++) {
+        for (k=0; k<round; k++) 
+        {
+            printf("Data=  %d\n", k*num/j);
             pivot = *(data+boundary[k*j]+rand()%(boundary[k*j+1]-boundary[k*j]-1));
 
             // Adjust data ordering 
@@ -149,6 +160,7 @@ int *partition(int *data, int num)
         j /= 2;
     }
     printf("\nInsertionSorting\n");
+    for (i=0; i<=num; i++) printf("%d ", boundary[i]);
     #pragma omp parallel for
     for (i=0; i<num; i++) 
     {
@@ -172,7 +184,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     data = loadFile(argv[1]);
-    data = partition(data, 4);
+    data = partition(data, atoi(argv[3]));
     writefile(argv[2], data);    
 
     return 0;
