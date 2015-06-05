@@ -1,4 +1,5 @@
 #include <omp.h>
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define SWAP(type, a, b) {type tmp=a; a=b; b=tmp;}
@@ -75,7 +76,6 @@ int *swapping(int *data, int *boundary, int *idx, int num)
     k=0;
     len=boundary[0];
 
-
     copyArray(tmp, boundary, num+1); 
     copyArray(result, data, size);
     /* Upperside */
@@ -116,17 +116,17 @@ void insertionSort(int *data, int len)
     }
 }
 
+
 int *partition(int *data, int num) 
 {
     int pivot, i, interval, j, tid;
     int boundary[num+1];
     int idx[num];
-    
+
     interval = (int)((float)size / (float)num + 0.5);
 
     /* Get boudary of partition */ 
-    for (i=0; i<num; i++) 
-        boundary[i] = i*interval;
+    for (i=0; i<num; i++) boundary[i] = i*interval;
     boundary[i] = size;
 
     j = num; 
@@ -136,38 +136,19 @@ int *partition(int *data, int num)
         int k;
 
         for (k=0; k<round; k++) {
-            pivot = *(data+boundary[k*(num/j)]);
+            pivot = *(data+boundary[k*j]+rand()%(boundary[k*j+1]-boundary[k*j]-1));
+
             // Adjust data ordering 
             for (i=k*num/j; i<(k+1)*j; i++) 
-            {
-                //printf("Boundary=%d, %d\n", boundary[i], boundary[i+1]);
                 idx[i] = adjusting(data, boundary[i], boundary[i+1], pivot);
-            }
-            /*
-            printf("Boundary\n");
-            for (i=0; i<num+1; i++) printf("%d ", boundary[i]);
-            printf("\nIndexing\n");
-            for (i=0; i<num; i++) printf("%d ", idx[i]);
-            printf("\n");
-    
-            printf("\nAfter Adjusting\n");
-            for (i=0; i<size; i++) printf("%d ", data[i]);
-            */
 
             // Swapping data position 
             data = swapping(data, boundary+k*j, idx+k*j, j);
-            /*
-            printf("\nAfter Swapping\n");
-            for (i=0; i<size; i++) printf("%d ", data[i]);
-            printf("\nBoundary\n");
-            for (i=0; i<num+1; i++) printf("%d ", boundary[i]);
-            */
         }
 
         j /= 2;
     }
-    printf("InsertionSorting\n");
-    
+    printf("\nInsertionSorting\n");
     #pragma omp parallel for
     for (i=0; i<num; i++) 
     {
@@ -180,12 +161,15 @@ int *partition(int *data, int num)
 
 int main(int argc, char **argv) 
 {
-    int nthreads, tid, *data, i;
+    int *data;
+
     if (argc < 3) 
     {
         printf("./* <input> <output>");
         exit(0);
     }
+
+    srand(time(NULL));
 
     data = loadFile(argv[1]);
     data = partition(data, 4);
