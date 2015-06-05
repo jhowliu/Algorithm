@@ -118,7 +118,7 @@ void insertionSort(int *data, int len)
 
 int *partition(int *data, int num) 
 {
-    int pivot, i, interval, j;
+    int pivot, i, interval, j, tid;
     int boundary[num+1];
     int idx[num];
     
@@ -134,10 +134,9 @@ int *partition(int *data, int num)
     while (j != 1) {
         int round = num/j;
         int k;
-        printf("Partition = %d\n\n", j);
+
         for (k=0; k<round; k++) {
             pivot = *(data+boundary[k*(num/j)]);
-            printf("Pivot = %d\n", pivot);
             // Adjust data ordering 
             for (i=k*num/j; i<(k+1)*j; i++) 
             {
@@ -167,12 +166,12 @@ int *partition(int *data, int num)
 
         j /= 2;
     }
-
-    for (i=0; i<num; i++) {
-        #pragma omp parallel private(i) 
-        {
-            insertionSort(data+boundary[i], boundary[i+1]-boundary[i]);
-        }
+    printf("InsertionSorting\n");
+    
+    #pragma omp parallel for
+    for (i=0; i<num; i++) 
+    {
+        insertionSort(data+boundary[i], boundary[i+1]-boundary[i]);
     }
 
     return data;
@@ -188,21 +187,9 @@ int main(int argc, char **argv)
         exit(0);
     }
 
-    //data = loadFile(argv[1]);
-    //data = partition(data, 4);
-    //\writefile(argv[2], data);    
-
-    #pragma omp parallel private(tid) 
-    {
-        tid = omp_get_thread_num();
-        printf("Hello World from thread = %d\n", tid);
-
-        if (tid == 0) 
-        {
-            nthreads = omp_get_num_threads();
-            printf("Number of threads = %d\n", nthreads);
-        }
-    }
+    data = loadFile(argv[1]);
+    data = partition(data, 4);
+    writefile(argv[2], data);    
 
     return 0;
 }
