@@ -9,4 +9,4 @@ if __name__ == '__main__':
     tmp = open(sys.argv[2]).readlines();
     result = np.array(map(lambda x: int(x.replace('\n', '')), tmp))
 
-    print "Error = " + str(sum(result-ans))
+    print "Error = " + str(sum((result-ans)!=0))

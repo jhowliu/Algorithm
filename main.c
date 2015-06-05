@@ -8,8 +8,20 @@ int size;
 
 void copyArray(int *a, int *b, int len) {
     int i;
+    //printf("\nCOPY, %d\n", len);
+    for (i=0; i<len; i++) {
+        //printf("%d ", b[i]);
+        a[i] = b[i];
+    }
+}
 
-    for (i=0; i<len; i++) a[i] = b[i];
+int getPivot(int a, int b, int c) {
+    int pivot = c;
+
+    if (a>b && a<c) pivot = a; 
+    else if (b>a && b<c) pivot = b; 
+
+    return pivot;
 }
 
 
@@ -22,12 +34,13 @@ int adjusting(int *data, int left, int right, int pivot)
 
     while (i < j) 
     {
-        while (data[i] <= pivot) i++;
-        while (data[j] > pivot)  j--;
+        while (data[i] <= pivot && i<=j) i++;
+        while (data[j] > pivot && i<=j)  j--;
 
         if (i < j) SWAP(int, data[i], data[j]);
     }
     
+
     return j;
 }
 
@@ -75,36 +88,29 @@ int *swapping(int *data, int *boundary, int *idx, int num)
     
     k=0;
     len=boundary[0];
-    printf("NUM=%d\n", num);
+
     copyArray(tmp, boundary, num+1); 
     copyArray(result, data, size);
-    printf("Before Boundary\n");
-    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
+
     /* Upperside */
     for (i=0, j=num/2 ; i<num/2; i++, j++) {
-        printf("\nLen\n");
         copyArray(result+len, data+boundary[i], idx[i]-boundary[i]+1);
         len += (idx[i]-boundary[i]+1);
         copyArray(result+len, data+boundary[j], idx[j]-boundary[j]+1);
         len += (idx[j]-boundary[j]+1);
         tmp[i+1]=len;
-        printf("%d\n", len);
     }
 
-    printf("\n");
-    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
     for (i=0, j=num/2 ; i<num/2; i++, j++) {
         copyArray(result+len, data+idx[i]+1, boundary[i+1]-(idx[i]+1));
         len += (boundary[i+1]-(idx[i]+1));
         copyArray(result+len, data+idx[j]+1, boundary[j+1]-(idx[j]+1));
         len += (boundary[j+1]-(idx[j]+1));
+
         tmp[j+1]=len;
-        printf("%d\n", len);
     }
 
     copyArray(boundary, tmp, num+1);
-    printf("\n");
-    for (i=0; i<=8; i++) printf("%d ", tmp[i]);
     free(data);
 
     return result;
@@ -142,17 +148,15 @@ int *partition(int *data, int num)
 
     while (j != 1) {
         int round = num/j;
-        int k;
-
+        int k, l;
         for (k=0; k<round; k++) 
         {
-            printf("Data=  %d\n", k*num/j);
-            pivot = *(data+boundary[k*j]+rand()%(boundary[k*j+1]-boundary[k*j]-1));
-
+            //pivot = *(data+boundary[k*j]+rand()%(boundary[k*j+1]-boundary[k*j]-1));
+            //pivot = *(data+boundary[k*j]);
+            pivot = getPivot(*(data+boundary[k*j]), *(data+boundary[k*j+1]), *(data+(boundary[k*j+1]+boundary[k*j])/2));
             // Adjust data ordering 
-            for (i=k*num/j; i<(k+1)*j; i++) 
-                idx[i] = adjusting(data, boundary[i], boundary[i+1], pivot);
-
+            for (i=k*j, l=k*j; i<(k+1)*j; i++, l++) 
+                idx[l] = adjusting(data, boundary[i], boundary[i+1], pivot);
             // Swapping data position 
             data = swapping(data, boundary+k*j, idx+k*j, j);
         }
@@ -160,7 +164,6 @@ int *partition(int *data, int num)
         j /= 2;
     }
     printf("\nInsertionSorting\n");
-    for (i=0; i<=num; i++) printf("%d ", boundary[i]);
     #pragma omp parallel for
     for (i=0; i<num; i++) 
     {
