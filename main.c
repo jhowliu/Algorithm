@@ -148,15 +148,15 @@ int *partition(int *data, int num)
 
     while (j != 1) {
         int round = num/j;
-        int k, l;
+        int k;
         for (k=0; k<round; k++) 
         {
             //pivot = *(data+boundary[k*j]+rand()%(boundary[k*j+1]-boundary[k*j]-1));
-            //pivot = *(data+boundary[k*j]);
-            pivot = getPivot(*(data+boundary[k*j]), *(data+boundary[k*j+1]), *(data+(boundary[k*j+1]+boundary[k*j])/2));
+            //pivot = *(data+boundary[k*j+1]);
+            pivot = getPivot(*(data+boundary[k*j]), *(data+boundary[k*j+1]-1), *(data+(boundary[k*j+1]+boundary[k*j])/2));
             // Adjust data ordering 
-            for (i=k*j, l=k*j; i<(k+1)*j; i++, l++) 
-                idx[l] = adjusting(data, boundary[i], boundary[i+1], pivot);
+            for (i=k*j; i<(k+1)*j; i++) 
+                idx[i] = adjusting(data, boundary[i], boundary[i+1], pivot);
             // Swapping data position 
             data = swapping(data, boundary+k*j, idx+k*j, j);
         }
